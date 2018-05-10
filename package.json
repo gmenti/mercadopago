@@ -1,0 +1,30 @@
+{
+  "name": "mercadopago",
+  "version": "1.0.0",
+  "description": "Node.js robot of mercadolol.",
+  "author": "Giuseppe Menti <mentifg@gmail.com>",
+  "license": "ISC",
+  "main": "./index.js",
+  "scripts": {
+    "start": "node ./index.js",
+    "watch": "nodemon --exec \" npm run start \"",
+    "lint": "eslint src"
+  },
+  "devDependencies": {
+    "eslint": "^3.9.0",
+    "eslint-config-airbnb": "^12.0.0",
+    "nodemon": "^1.11.0",
+    "rimraf": "^2.5.4"
+  },
+  "dependencies": {
+    "cheerio": "^0.22.0",
+    "express": "^4.15.4",
+    "nightmare": "^2.10.0",
+    "nightmare-inline-download": "^0.2.2",
+    "node-cmd": "^1.2.0",
+    "pdftohtmljs": "^0.4.2",
+    "puppeteer": "^1.4.0",
+    "request": "^2.79.0",
+    "request-promise": "^4.2.1"
+  }
+}
