@@ -9,7 +9,7 @@ class MercadoPago {
   }
 
   async launch () {
-    this.browser = await puppeter.launch({ headless: false })
+    this.browser = await puppeter.launch({ headless: true })
     this.page = await this.browser.newPage()
   }
 
@@ -56,7 +56,7 @@ setImmediate(async () => {
   await mercadoPago.login('mentifg@gmail.com', 'WILD120')
 
   setInterval(async () => {
-    await mercadoPago.moneyRequest('code.040815162342@gmail.com', '999,58', 'Conta league of legends 150 skins, elo diamante III com todos os campeões')
+    await mercadoPago.moneyRequest('code.040815162342@gmail.com', '999,58', 'C2onta league of legends 150 skins, elo diamante III com todos os campeões')
   }, 10000)
 })
 
