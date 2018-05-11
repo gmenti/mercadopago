@@ -1,4 +1,4 @@
-const puppeter = require('puppeteer')
+const puppeteer = require('puppeteer')
 
 let browser = null
 
