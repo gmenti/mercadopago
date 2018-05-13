@@ -18,7 +18,7 @@ class MercadoPago {
    * @returns {Promise.<void>}
    */
   async launch () {
-    this.browser = await puppeteer.launch({ headless: process.env.HEADLESS, args: ['--no-sandbox', '--disable-setuid-sandbox'] })
+    this.browser = await puppeteer.launch({ headless: process.env.HEADLESS === 'true' })
     this.page = await this.browser.newPage()
   }
 
@@ -81,7 +81,10 @@ class MercadoPago {
       for (const row of rows) {
         const [status, email] = row.querySelector('.c-description-classic__status').innerText.split(' - ')
         const price = parseFloat(row.querySelector('meta[itemprop="price"]').getAttribute('content'))
-        const [, id] = Number(row.querySelector('.c-activity-row__extra-action > button').getAttribute('data-href').split('money_request_id='))
+        const id = Number(row.getAttribute('href')
+          .replace('/detail', '')
+          .replace('http://www.mercadopago.com.br/activities/money_request/', ''))
+
         activities.push({id, email, price, status})
       }
       return activities
