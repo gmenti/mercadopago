@@ -18,7 +18,7 @@ class MercadoPago {
    * @returns {Promise.<void>}
    */
   async launch () {
-    this.browser = await puppeteer.launch({ headless: false, args: ['--no-sandbox', '--disable-setuid-sandbox'] })
+    this.browser = await puppeteer.launch({ headless: process.env.HEADLESS, args: ['--no-sandbox', '--disable-setuid-sandbox'] })
     this.page = await this.browser.newPage()
   }
 
