@@ -69,6 +69,8 @@ class MercadoPago {
 
     await this.page.waitForSelector('#postBtn')
     await this.page.click('#postBtn')
+
+    await this.page.waitForSelector('.result-ok')
   }
 
   async activities () {
@@ -99,8 +101,12 @@ const mercadoPago = new MercadoPago()
 
 app.post('/money-request', async (req, res) => {
   const { email, amount, message } = req.body
-  await mercadoPago.moneyRequest(email, amount, message)
-  res.sendStatus(204)
+  try {
+    await mercadoPago.moneyRequest(email, amount, message)
+    res.sendStatus(204)
+  } catch (err) {
+    res.send(500, { message: err.message })
+  }
 })
 
 app.get('/activities', async (req, res) => {
