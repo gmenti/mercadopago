@@ -1,7 +1,6 @@
 require('dotenv').config()
 const puppeteer = require('puppeteer')
-const express = require('express')
-const bodyParser = require('body-parser')
+const io = require('socket.io-client')
 
 class MercadoPago {
   /**
@@ -18,11 +17,14 @@ class MercadoPago {
    * @returns {Promise.<void>}
    */
   async launch () {
-    this.browser = await puppeteer.launch({
-      headless: process.env.HEADLESS === 'true',
-      args: ['--no-sandbox', '--disable-setuid-sandbox']
-    })
-    this.page = await this.browser.newPage()
+    if (!this.browser) {
+      this.browser = await puppeteer.launch({
+        headless: false,
+        args: ['--no-sandbox', '--disable-setuid-sandbox']
+      })
+      this.page = (await this.browser.pages())[0]
+      await this.page.goto('https://www.mercadopago.com.br')
+    }
   }
 
   /**
@@ -33,7 +35,7 @@ class MercadoPago {
    * @returns {Promise.<void>}
    */
   async login (email, password) {
-    await this.page.goto('https://www.mercadolivre.com/jms/mlb/lgz/login?platform_id=mp&go=https://www.mercadopago.com/mlb/accountSummary')
+    await this.goToLoginPage()
 
     await this.page.waitForSelector('#user_id')
     await this.page.type('#user_id', email)
@@ -73,7 +75,7 @@ class MercadoPago {
     await this.page.waitForSelector('#postBtn')
     await this.page.click('#postBtn')
 
-    await this.page.waitForSelector('.result-ok')
+    await this.page.waitForSelector('.result-ok', { timeout: 5000 })
   }
 
   async activities () {
@@ -97,26 +99,28 @@ class MercadoPago {
   }
 }
 
-const app = express()
-app.use(bodyParser.json())
-
+const socket = io(process.env.SERVER_URI)
 const mercadoPago = new MercadoPago()
+const moneyRequests = []
 
-app.post('/money-request', async (req, res) => {
-  const { email, amount, message } = req.body
-  try {
-    await mercadoPago.moneyRequest(email, amount, message)
-    res.sendStatus(204)
-  } catch (err) {
-    res.send(500, { message: err.message })
-  }
-})
-
-app.get('/activities', async (req, res) => {
-  res.send(await mercadoPago.activities())
-})
-
-app.listen(process.env.PORT, async () => {
+socket.on('connect', async () => {
   await mercadoPago.launch()
-  await mercadoPago.login(process.env.EMAIL, process.env.PASSWORD)
 })
+
+socket.on('money-request', data => {
+  moneyRequests.push(data)
+})
+
+const loop = async () => {
+  if (moneyRequests.length) {
+    const [_id, email, amount, message] = moneyRequests.shift()
+    try {
+      await mercadoPago.moneyRequest(email, amount, message)
+      socket.emit('money-request/finish', _id)
+    } catch (err) {
+      socket.emit('money-request/error', [_id, err.message])
+    }
+  }
+  setTimeout(loop, 1000)
+}
+loop()
